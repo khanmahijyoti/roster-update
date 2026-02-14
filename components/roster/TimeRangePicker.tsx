@@ -52,8 +52,8 @@ export function TimeRangePicker({
           />
         </div>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <p className="text-xs text-gray-500">
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      <p className="text-xs text-muted-foreground">
         Shifts must be between {minTime} and {maxTime}
       </p>
     </div>

@@ -316,7 +316,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
   if (loading) {
     return (
       <Card className="p-6">
-        <p className="text-center text-gray-500">Loading roster...</p>
+        <p className="text-center text-muted-foreground">Loading roster...</p>
       </Card>
     );
   }
@@ -324,7 +324,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
   if (workers.length === 0) {
     return (
       <Card className="p-6">
-        <p className="text-center text-gray-500">
+        <p className="text-center text-muted-foreground">
           No workers found in this restaurant. Add workers to start building the roster.
         </p>
       </Card>
@@ -361,7 +361,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
 
       {/* Edit Shift Dialog */}
       {editingShift && (
-        <Card className="border-2 border-primary bg-white shadow-2xl">
+        <Card className="border-2 border-primary bg-card shadow-2xl">
           <div className="h-2 bg-primary" />
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
@@ -423,7 +423,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
           <span>👉</span>
           <span>Swipe left/right to see all days</span>
         </div>
-        <div className="overflow-x-auto bg-white rounded-xl shadow-sm border-2 border-primary/20">
+        <div className="overflow-x-auto bg-card rounded-xl shadow-sm border-2 border-primary/20">
           <div className="min-w-[1000px] p-4">
           {/* Header */}
           <div className="grid grid-cols-8 gap-3 mb-4 pb-3 border-b-2 border-primary/20">
@@ -487,7 +487,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                           variant="outline"
                           size="sm"
                           onClick={() => handleCellClick(worker.id, date)}
-                          className="w-full bg-white hover:bg-muted/50 border-2 border-primary/30 hover:border-primary font-semibold transition-all"
+                          className="w-full hover:bg-muted/50 border-2 border-primary/30 hover:border-primary font-semibold transition-all"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add Shift

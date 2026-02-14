@@ -74,18 +74,18 @@ export function RosterActions({
               Roster Status
             </h3>
             <motion.p 
-              className="text-sm text-gray-600 mt-1"
+              className="text-sm text-muted-foreground mt-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                <span className="inline-block w-2 h-2 rounded-full bg-chart-4"></span>
                 {draftCount} draft{draftCount !== 1 ? 's' : ''}
               </span>
               {' • '}
               <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
                 {publishedCount} published
               </span>
             </motion.p>
@@ -109,7 +109,7 @@ export function RosterActions({
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="px-6 py-3 bg-gray-100 text-gray-400 rounded-2xl font-semibold text-sm"
+              className="px-6 py-3 bg-muted text-muted-foreground rounded-2xl font-semibold text-sm"
             >
               <div className="flex items-center gap-2">
                 <FileCheck className="w-4 h-4" />
@@ -122,7 +122,7 @@ export function RosterActions({
         {/* Messages */}
         {error && (
           <motion.div 
-            className="flex items-start gap-2 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl"
+            className="flex items-start gap-2 bg-destructive/10 border-2 border-destructive/30 text-destructive-foreground px-4 py-3 rounded-xl"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -133,7 +133,7 @@ export function RosterActions({
 
         {success && (
           <motion.div 
-            className="flex items-start gap-2 bg-green-50 border-2 border-green-200 text-green-700 px-4 py-3 rounded-xl"
+            className="flex items-start gap-2 bg-primary/10 border-2 border-primary/30 text-primary px-4 py-3 rounded-xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
@@ -144,7 +144,7 @@ export function RosterActions({
 
         {/* Info */}
         <div className="bg-muted/50 rounded-xl p-4 border border-primary/20">
-          <div className="text-xs text-gray-600 space-y-1.5">
+          <div className="text-xs text-muted-foreground space-y-1.5">
             <p className="flex items-start gap-2">
               <span className="text-primary font-bold">•</span>
               <span>Draft shifts are only visible to admins</span>

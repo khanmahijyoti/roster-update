@@ -22,14 +22,14 @@ export function ShiftCard({
   statusIndicator,
 }: ShiftCardProps) {
   const getStatusColor = () => {
-    if (!statusIndicator) return 'bg-gray-100';
+    if (!statusIndicator) return 'bg-muted/50';
     switch (statusIndicator) {
       case 'available':
-        return 'bg-green-100 border-green-300';
+        return 'bg-primary/20 border-primary/40';
       case 'warning':
-        return 'bg-orange-100 border-orange-300';
+        return 'bg-chart-4/20 border-chart-4/40';
       case 'busy':
-        return 'bg-red-100 border-red-300';
+        return 'bg-destructive/20 border-destructive/40';
     }
   };
 
@@ -39,10 +39,10 @@ export function ShiftCard({
       <div
         className={`w-2 h-2 rounded-full ${
           statusIndicator === 'available'
-            ? 'bg-green-500'
+            ? 'bg-primary'
             : statusIndicator === 'warning'
-            ? 'bg-orange-500'
-            : 'bg-red-500'
+            ? 'bg-chart-4'
+            : 'bg-destructive'
         }`}
       />
     );
@@ -64,14 +64,14 @@ export function ShiftCard({
             {getStatusIcon()}
             <p className="font-medium text-sm truncate">{workerName}</p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-600">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             <span>
               {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
             </span>
           </div>
           {shift.status === 'draft' && (
-            <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded">
+            <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded">
               Draft
             </span>
           )}
@@ -94,7 +94,7 @@ export function ShiftCard({
                 size="sm"
                 variant="ghost"
                 onClick={() => onDelete(shift.id)}
-                className="h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600"
+                className="h-7 w-7 p-0 hover:bg-destructive/20 hover:text-destructive"
               >
                 <X className="w-4 h-4" />
               </Button>
