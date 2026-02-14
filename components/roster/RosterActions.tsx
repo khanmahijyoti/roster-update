@@ -65,12 +65,12 @@ export function RosterActions({
   }
 
   return (
-    <Card className="p-6 shadow-lg border-0 bg-gradient-to-br from-white to-purple-50">
+    <Card className="p-6 shadow-lg border-0 bg-card">
       <div className="space-y-4">
         {/* Status Summary */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h3 className="font-semibold text-xl text-primary">
               Roster Status
             </h3>
             <motion.p 
@@ -97,8 +97,8 @@ export function RosterActions({
               disabled={publishing}
               borderRadius="1.5rem"
               containerClassName="h-14 w-48"
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold"
-              borderClassName="bg-[radial-gradient(var(--purple-500)_40%,transparent_60%)]"
+              className="bg-primary text-primary-foreground font-semibold"
+              borderClassName="bg-[radial-gradient(var(--primary)_40%,transparent_60%)]"
             >
               <div className="flex items-center gap-2">
                 <Send className="w-4 h-4" />
@@ -143,18 +143,18 @@ export function RosterActions({
         )}
 
         {/* Info */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
+        <div className="bg-muted/50 rounded-xl p-4 border border-primary/20">
           <div className="text-xs text-gray-600 space-y-1.5">
             <p className="flex items-start gap-2">
-              <span className="text-purple-500 font-bold">•</span>
+              <span className="text-primary font-bold">•</span>
               <span>Draft shifts are only visible to admins</span>
             </p>
             <p className="flex items-start gap-2">
-              <span className="text-purple-500 font-bold">•</span>
+              <span className="text-primary font-bold">•</span>
               <span>Published shifts are visible to workers</span>
             </p>
             <p className="flex items-start gap-2">
-              <span className="text-purple-500 font-bold">•</span>
+              <span className="text-primary font-bold">•</span>
               <span>Workers will see published shifts on their dashboard</span>
             </p>
           </div>

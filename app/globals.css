@@ -180,20 +180,7 @@
 }
 
 @layer utilities {
-  .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  
-  .gradient-bg-soft {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  }
-  
   .card-hover {
     @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
-  }
-  
-  .btn-primary-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    @apply text-white shadow-md hover:shadow-lg transition-all duration-200;
   }
 }

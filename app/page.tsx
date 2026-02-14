@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center max-w-md">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Roster Management System

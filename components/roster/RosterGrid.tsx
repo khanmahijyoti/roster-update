@@ -334,7 +334,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 text-red-700 px-6 py-4 rounded-xl shadow-sm">
+        <div className="bg-destructive/10 border-2 border-destructive text-destructive-foreground px-6 py-4 rounded-xl shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-xl">⚠️</span>
             <span className="font-medium">{error}</span>
@@ -343,16 +343,16 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
       )}
 
       {/* Legend */}
-      <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-100 shadow-sm">
+      <Card className="bg-muted/50 border-2 border-primary/20 shadow-sm">
         <CardContent className="p-4 sm:p-5">
-          <h4 className="font-bold text-sm sm:text-base mb-3 text-purple-900">Availability Legend</h4>
+          <h4 className="font-bold text-sm sm:text-base mb-3 text-foreground">Availability Legend</h4>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 flex-shrink-0 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm"></div>
+              <div className="w-5 h-5 flex-shrink-0 rounded-lg bg-primary shadow-sm"></div>
               <span className="font-medium">🟢 Available - Worker is available and free</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 flex-shrink-0 rounded-lg bg-gradient-to-br from-red-400 to-pink-500 shadow-sm"></div>
+              <div className="w-5 h-5 flex-shrink-0 rounded-lg bg-destructive shadow-sm"></div>
               <span className="font-medium">🔴 Unavailable - Worker marked unavailable OR has shift elsewhere</span>
             </div>
           </div>
@@ -361,11 +361,11 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
 
       {/* Edit Shift Dialog */}
       {editingShift && (
-        <Card className="border-2 border-purple-500 bg-white shadow-2xl">
-          <div className="h-2 bg-gradient-to-r from-purple-500 to-indigo-500" />
+        <Card className="border-2 border-primary bg-white shadow-2xl">
+          <div className="h-2 bg-primary" />
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <h3 className="font-bold text-xl text-primary">
                 {editingShift.shiftId ? 'Edit Shift' : 'Create New Shift'}
               </h3>
               <Button variant="ghost" size="sm" onClick={handleCancelEdit} className="hover:bg-red-50">
@@ -374,16 +374,16 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
             </div>
 
             <div className="space-y-5">
-              <div className="bg-purple-50 p-4 rounded-xl">
-                <Label className="text-xs font-semibold text-purple-900">WORKER</Label>
+              <div className="bg-muted/50 p-4 rounded-xl">
+                <Label className="text-xs font-semibold text-foreground">WORKER</Label>
                 <p className="text-base font-bold mt-1">
                   {workers.find((w) => w.id === editingShift.workerId)?.first_name}{' '}
                   {workers.find((w) => w.id === editingShift.workerId)?.last_name}
                 </p>
               </div>
 
-              <div className="bg-indigo-50 p-4 rounded-xl">
-                <Label className="text-xs font-semibold text-indigo-900">DATE</Label>
+              <div className="bg-muted/50 p-4 rounded-xl">
+                <Label className="text-xs font-semibold text-foreground">DATE</Label>
                 <p className="text-base font-bold mt-1">
                   {new Date(editingShift.date).toLocaleDateString('en-AU', {
                     weekday: 'long',
@@ -419,21 +419,21 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
       {/* Roster Grid */}
       <div className="space-y-2">
         {/* Mobile scroll hint */}
-        <div className="sm:hidden text-xs text-purple-600 font-medium px-2 flex items-center gap-2">
+        <div className="sm:hidden text-xs text-primary font-medium px-2 flex items-center gap-2">
           <span>👉</span>
           <span>Swipe left/right to see all days</span>
         </div>
-        <div className="overflow-x-auto bg-white rounded-xl shadow-sm border-2 border-purple-100">
+        <div className="overflow-x-auto bg-white rounded-xl shadow-sm border-2 border-primary/20">
           <div className="min-w-[1000px] p-4">
           {/* Header */}
-          <div className="grid grid-cols-8 gap-3 mb-4 pb-3 border-b-2 border-purple-100">
-            <div className="font-bold text-base p-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg">
+          <div className="grid grid-cols-8 gap-3 mb-4 pb-3 border-b-2 border-primary/20">
+            <div className="font-bold text-base p-3 bg-primary text-primary-foreground rounded-lg">
               Worker
             </div>
             {weekDates.map((date) => (
-              <div key={date.toISOString()} className="font-bold text-sm p-3 text-center bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
-                <div className="text-purple-900">{getShortDayName(date)}</div>
-                <div className="text-xs text-purple-600 mt-1">{date.getDate()}</div>
+              <div key={date.toISOString()} className="font-bold text-sm p-3 text-center bg-muted/50 rounded-lg border border-primary/30">
+                <div className="text-foreground">{getShortDayName(date)}</div>
+                <div className="text-xs text-primary mt-1">{date.getDate()}</div>
               </div>
             ))}
           </div>
@@ -442,9 +442,9 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
           {workers.map((worker) => (
             <div key={worker.id} className="grid grid-cols-8 gap-3 mb-3">
               {/* Worker Name */}
-              <div className="p-3 font-semibold text-sm flex items-center bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border-2 border-slate-200 overflow-hidden">
+              <div className="p-3 font-semibold text-sm flex items-center bg-muted/30 rounded-lg border-2 border-border overflow-hidden">
                 <div className="flex items-center gap-2 min-w-0 w-full">
-                  <div className="w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-8 h-8 flex-shrink-0 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">
                     {worker.first_name[0]}{worker.last_name[0]}
                   </div>
                   <span className="truncate">{worker.first_name} {worker.last_name}</span>
@@ -464,10 +464,10 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                     key={`${worker.id}-${date.toISOString()}`}
                     className={`min-h-[120px] p-3 rounded-xl border-2 transition-all shadow-sm hover:shadow-md ${
                       isSelected
-                        ? 'border-purple-500 shadow-lg scale-105'
+                        ? 'border-primary shadow-lg scale-105'
                         : status === 'available'
-                        ? 'border-green-300 bg-gradient-to-br from-green-50 to-emerald-50'
-                        : 'border-red-300 bg-gradient-to-br from-red-50 to-pink-50'
+                        ? 'border-primary/30 bg-primary/10'
+                        : 'border-destructive/30 bg-destructive/10'
                     }`}
                   >
                     <div className="space-y-2">
@@ -487,7 +487,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                           variant="outline"
                           size="sm"
                           onClick={() => handleCellClick(worker.id, date)}
-                          className="w-full bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-400 font-semibold transition-all"
+                          className="w-full bg-white hover:bg-muted/50 border-2 border-primary/30 hover:border-primary font-semibold transition-all"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add Shift
@@ -495,7 +495,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                       )}
 
                       {status === 'busy' && (
-                        <div className="text-xs text-red-700 font-semibold text-center bg-red-100 px-2 py-1 rounded-lg">
+                        <div className="text-xs text-destructive-foreground font-semibold text-center bg-destructive/20 px-2 py-1 rounded-lg">
                           ⚠️ Unavailable
                         </div>
                       )}

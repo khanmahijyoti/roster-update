@@ -326,7 +326,7 @@ export default function WorkerPage() {
               })}
             </div>
             {!isLocked && (
-              <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-100">
+              <div className="mt-6 p-4 bg-muted/50 rounded-xl border-2 border-primary/20">
                 <p className="text-sm text-center text-muted-foreground">
                   💡 Tap a period to toggle availability. Changes are saved automatically.
                 </p>

@@ -132,12 +132,12 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
               Weekly Reports
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
@@ -161,7 +161,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Reports List */}
           <Card className="lg:col-span-1 shadow-lg border-0">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
+            <CardHeader className="bg-muted/50">
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Past Reports
@@ -183,15 +183,15 @@ export default function ReportsPage() {
                       onClick={() => setSelectedReport(report)}
                       className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                         selectedReport?.id === report.id
-                          ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-indigo-50 shadow-md'
-                          : 'border-gray-200 hover:border-purple-300 bg-white'
+                          ? 'border-primary bg-muted/50 shadow-md'
+                          : 'border-gray-200 hover:border-primary/50 bg-white'
                       }`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                        <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">
                           <Calendar className="w-6 h-6" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -215,7 +215,7 @@ export default function ReportsPage() {
 
           {/* Report Details */}
           <Card className="lg:col-span-2 shadow-lg border-0">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50">
+            <CardHeader className="bg-muted/50">
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-xl">
@@ -253,39 +253,39 @@ export default function ReportsPage() {
                 <div className="space-y-6">
                   {/* Summary Stats */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border-2 border-blue-200">
+                    <div className="bg-muted/30 p-4 rounded-xl border-2 border-primary/20">
                       <div className="flex items-center gap-2 mb-2">
-                        <Clock className="w-5 h-5 text-blue-600" />
-                        <p className="text-xs font-medium text-blue-900">Total Hours</p>
+                        <Clock className="w-5 h-5 text-primary" />
+                        <p className="text-xs font-medium text-foreground">Total Hours</p>
                       </div>
-                      <p className="text-2xl font-bold text-blue-600">
+                      <p className="text-2xl font-bold text-primary">
                         {selectedReport.total_hours.toFixed(1)}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border-2 border-green-200">
+                    <div className="bg-muted/30 p-4 rounded-xl border-2 border-primary/20">
                       <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-5 h-5 text-green-600" />
-                        <p className="text-xs font-medium text-green-900">Workers</p>
+                        <Users className="w-5 h-5 text-primary" />
+                        <p className="text-xs font-medium text-foreground">Workers</p>
                       </div>
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-2xl font-bold text-primary">
                         {selectedReport.summary_data.total_workers}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border-2 border-purple-200">
+                    <div className="bg-muted/50 p-4 rounded-xl border-2 border-primary/30">
                       <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-5 h-5 text-purple-600" />
-                        <p className="text-xs font-medium text-purple-900">Shifts</p>
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <p className="text-xs font-medium text-foreground">Shifts</p>
                       </div>
-                      <p className="text-2xl font-bold text-purple-600">
+                      <p className="text-2xl font-bold text-primary">
                         {selectedReport.summary_data.total_shifts}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border-2 border-orange-200">
+                    <div className="bg-muted/30 p-4 rounded-xl border-2 border-primary/20">
                       <div className="flex items-center gap-2 mb-2">
-                        <Building2 className="w-5 h-5 text-orange-600" />
-                        <p className="text-xs font-medium text-orange-900">Avg Hours</p>
+                        <Building2 className="w-5 h-5 text-primary" />
+                        <p className="text-xs font-medium text-foreground">Avg Hours</p>
                       </div>
-                      <p className="text-2xl font-bold text-orange-600">
+                      <p className="text-2xl font-bold text-primary">
                         {selectedReport.summary_data.total_workers > 0
                           ? (
                               selectedReport.total_hours / selectedReport.summary_data.total_workers
@@ -297,7 +297,7 @@ export default function ReportsPage() {
 
                   {/* Worker Details */}
                   <div>
-                    <h3 className="font-bold text-lg mb-4 text-purple-900">Worker Breakdown</h3>
+                    <h3 className="font-bold text-lg mb-4 text-foreground">Worker Breakdown</h3>
                     <div className="space-y-3">
                       {selectedReport.summary_data.worker_stats.map((worker, index) => (
                         <motion.div
@@ -316,7 +316,7 @@ export default function ReportsPage() {
                             className="w-full p-4 flex items-center justify-between hover:bg-purple-50 transition-colors"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
                                 {worker.worker_name.split(' ').map((n) => n[0]).join('')}
                               </div>
                               <div className="text-left">
@@ -326,7 +326,7 @@ export default function ReportsPage() {
                             </div>
                             <div className="flex items-center gap-4">
                               <div className="text-right">
-                                <p className="font-bold text-purple-600">
+                                <p className="font-bold text-primary">
                                   {worker.total_hours.toFixed(1)} hrs
                                 </p>
                                 <p className="text-xs text-muted-foreground">
@@ -346,16 +346,16 @@ export default function ReportsPage() {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="border-t-2 bg-gradient-to-r from-purple-50 to-indigo-50"
+                              className="border-t-2 bg-muted/50"
                             >
                               <div className="p-4 space-y-2">
-                                <p className="font-semibold text-sm text-purple-900 mb-3">
+                                <p className="font-semibold text-sm text-foreground mb-3">
                                   Shift Details
                                 </p>
                                 {worker.shifts.map((shift, shiftIndex) => (
                                   <div
                                     key={shiftIndex}
-                                    className="bg-white p-3 rounded-lg border border-purple-200"
+                                    className="bg-white p-3 rounded-lg border border-primary/30"
                                   >
                                     <div className="flex justify-between items-start">
                                       <div>
@@ -365,12 +365,12 @@ export default function ReportsPage() {
                                         <p className="text-xs text-muted-foreground mt-1">
                                           {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
                                         </p>
-                                        <p className="text-xs text-purple-600 mt-1">
+                                        <p className="text-xs text-primary mt-1">
                                           {shift.restaurant_name}
                                         </p>
                                       </div>
                                       <div className="text-right">
-                                        <p className="font-bold text-purple-600">
+                                        <p className="font-bold text-primary">
                                           {shift.hours.toFixed(1)} hrs
                                         </p>
                                       </div>
