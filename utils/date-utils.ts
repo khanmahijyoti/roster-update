@@ -26,9 +26,22 @@ export function getWeekEnd(date: Date): Date {
 
 /**
  * Get the current week boundary (Monday - Sunday containing today)
+ * Special case: After Saturday 23:00, "current week" is next Monday-Sunday
  */
 export function getCurrentWeek(): WeekBoundary {
   const now = new Date();
+  
+  // Check if we're after Saturday 23:00 of current week
+  if (isAfterSaturdayLockout()) {
+    // Return next week as "current week"
+    const nextMonday = new Date(getWeekStart(now));
+    nextMonday.setDate(nextMonday.getDate() + 7);
+    return {
+      start: nextMonday,
+      end: getWeekEnd(nextMonday),
+    };
+  }
+  
   return {
     start: getWeekStart(now),
     end: getWeekEnd(now),
@@ -37,12 +50,26 @@ export function getCurrentWeek(): WeekBoundary {
 
 /**
  * Get the next week boundary (Monday - Sunday after current week)
+ * Special case: After Saturday 23:00, "next week" is week after next
  */
 export function getNextWeek(): WeekBoundary {
   const now = new Date();
-  const nextMonday = new Date(getWeekStart(now));
-  nextMonday.setDate(nextMonday.getDate() + 7);
+  const currentWeekStart = getWeekStart(now);
   
+  // Check if we're after Saturday 23:00
+  if (isAfterSaturdayLockout()) {
+    // Return week after next as "next week"
+    const nextNextMonday = new Date(currentWeekStart);
+    nextNextMonday.setDate(currentWeekStart.getDate() + 14);
+    return {
+      start: nextNextMonday,
+      end: getWeekEnd(nextNextMonday),
+    };
+  }
+  
+  // Normal case: return next week
+  const nextMonday = new Date(currentWeekStart);
+  nextMonday.setDate(currentWeekStart.getDate() + 7);
   return {
     start: nextMonday,
     end: getWeekEnd(nextMonday),
@@ -50,15 +77,36 @@ export function getNextWeek(): WeekBoundary {
 }
 
 /**
- * Check if availability editing is locked (after Saturday 23:00)
+ * Helper function to check if we're after Saturday 23:00 of current calendar week
  */
-export function isAvailabilityLocked(): boolean {
+function isAfterSaturdayLockout(): boolean {
   const now = new Date();
   const currentWeekStart = getWeekStart(now);
   
-  // Calculate Saturday 23:00 of current week
+  // Calculate Saturday 23:00 of current calendar week
   const lockoutTime = new Date(currentWeekStart);
   lockoutTime.setDate(currentWeekStart.getDate() + 5); // Saturday (Monday + 5 days)
+  lockoutTime.setHours(23, 0, 0, 0);
+  
+  return now >= lockoutTime;
+}
+
+/**
+ * Check if availability editing is locked (after Saturday 23:00)
+ * This function checks if the lockout time for editing the displayed "next week" has passed
+ */
+export function isAvailabilityLocked(): boolean {
+  // Get the displayed next week (which shifts after Saturday 23:00)
+  const nextWeek = getNextWeek();
+  const now = new Date();
+  
+  // Calculate Saturday 23:00 of the week BEFORE the displayed next week
+  // This is the lockout time for editing that next week's availability
+  const lockoutWeekStart = new Date(nextWeek.start);
+  lockoutWeekStart.setDate(lockoutWeekStart.getDate() - 7); // Go back to previous week
+  
+  const lockoutTime = new Date(lockoutWeekStart);
+  lockoutTime.setDate(lockoutWeekStart.getDate() + 5); // Saturday
   lockoutTime.setHours(23, 0, 0, 0);
   
   return now >= lockoutTime;
