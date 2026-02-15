@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { FileText, Download, Calendar, Users, Clock, Building2, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Download, Calendar, Users, Clock, Building2, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
+import { exportReportToPDF } from '@/utils/pdf-export';
 
 interface WorkerStat {
   worker_id: string;
@@ -231,15 +232,26 @@ export default function ReportsPage() {
                   )}
                 </div>
                 {selectedReport && (
-                  <Button
-                    onClick={() => exportToCSV(selectedReport)}
-                    size="sm"
-                    variant="outline"
-                    className="shadow-sm"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => exportReportToPDF(selectedReport)}
+                      size="sm"
+                      variant="default"
+                      className="shadow-sm"
+                    >
+                      <FileDown className="w-4 h-4 mr-2" />
+                      Export PDF
+                    </Button>
+                    <Button
+                      onClick={() => exportToCSV(selectedReport)}
+                      size="sm"
+                      variant="outline"
+                      className="shadow-sm"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>

@@ -30,6 +30,7 @@ export default function SignupPage() {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/login`,
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -40,10 +41,6 @@ export default function SignupPage() {
       if (error) throw error
 
       setSuccess(true)
-      // Redirect to login after a delay
-      setTimeout(() => {
-        router.push('/auth/login')
-      }, 2000)
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
     } finally {
@@ -56,11 +53,22 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-green-600">Success!</CardTitle>
-            <CardDescription>
-              Your account has been created. Redirecting to login...
+            <CardTitle className="text-2xl font-bold text-green-600">Check Your Email!</CardTitle>
+            <CardDescription className="space-y-2 pt-2">
+              <p>Your account has been created successfully.</p>
+              <p className="font-semibold">Please check your email inbox for a verification link.</p>
+              <p className="text-xs">After verifying your email, you can log in to your account.</p>
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => router.push('/auth/login')} 
+              variant="outline" 
+              className="w-full"
+            >
+              Go to Login
+            </Button>
+          </CardContent>
         </Card>
       </div>
     )

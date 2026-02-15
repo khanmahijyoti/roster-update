@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentWeek } from '@/utils/date-utils';
+import { getWeekStart, getWeekEnd } from '@/utils/date-utils';
 
 /**
  * This endpoint should be called by a cron job every Saturday night at 23:30
- * It will generate reports for all restaurants for the current week
+ * It will generate reports for all restaurants for the COMPLETED week
+ * (the week that just ended, not the new "current week" after the 23:00 shift)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,10 +19,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Get current week dates
-    const currentWeek = getCurrentWeek();
-    const weekStart = currentWeek.start.toISOString().split('T')[0];
-    const weekEnd = currentWeek.end.toISOString().split('T')[0];
+    // Get the completed week dates
+    // Since this runs at 23:30 on Saturday, after the 23:00 lockout,
+    // we need to get the week that contains "today" in calendar terms
+    // (before the rolling shift), which is the week that just completed
+    const now = new Date();
+    const completedWeekStart = getWeekStart(now); // Get actual calendar week start
+    const completedWeekEnd = getWeekEnd(now); // Get actual calendar week end
+    
+    const weekStart = completedWeekStart.toISOString().split('T')[0];
+    const weekEnd = completedWeekEnd.toISOString().split('T')[0];
 
     // Get all restaurants
     const { data: restaurants, error: restaurantsError } = await supabase
