@@ -7,8 +7,15 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { FileText, Download, Calendar, Users, Clock, Building2, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
+import { FileText, Download, Calendar, Users, Clock, Building2, ChevronDown, ChevronUp, FileDown, RefreshCw, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { exportReportToPDF } from '@/utils/pdf-export';
+import { AdminNav } from '@/components/layout/AdminNav';
+
+interface ArchivedWeek {
+  weekStart: Date;
+  weekEnd: Date;
+  label: string;
+}
 
 interface WorkerStat {
   worker_id: string;
@@ -54,6 +61,12 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [expandedWorker, setExpandedWorker] = useState<string | null>(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [showGenerateForm, setShowGenerateForm] = useState(false);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
+  const [availableWeeks, setAvailableWeeks] = useState<ArchivedWeek[]>([]);
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState<number>(0);
 
   useEffect(() => {
     if (!authLoading) {
@@ -63,9 +76,21 @@ export default function ReportsPage() {
         router.push('/dashboard');
       } else {
         loadReports();
+        loadRestaurants();
+        generateAvailableWeeks();
       }
     }
   }, [user, role, authLoading]);
+
+  // Auto-select first report when week changes
+  useEffect(() => {
+    const filteredReports = getFilteredReports();
+    if (filteredReports.length > 0) {
+      setSelectedReport(filteredReports[0]);
+    } else {
+      setSelectedReport(null);
+    }
+  }, [selectedWeekIndex]);
 
   async function loadReports() {
     try {
@@ -91,6 +116,141 @@ export default function ReportsPage() {
     }
   }
 
+  async function loadRestaurants() {
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+
+      setRestaurants(data || []);
+      if (data && data.length > 0) {
+        setSelectedRestaurantId(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading restaurants:', error);
+    }
+  }
+
+  async function generateAvailableWeeks() {
+    try {
+      // Find the earliest shift in the database
+      const { data: earliestShift, error } = await supabase
+        .from('shifts')
+        .select('start_time')
+        .order('start_time', { ascending: true })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!earliestShift || earliestShift.length === 0) {
+        // No shifts yet, just show empty
+        setAvailableWeeks([]);
+        return;
+      }
+
+      const firstShiftDate = new Date(earliestShift[0].start_time);
+      const today = new Date();
+      
+      // Find the Monday of the week containing the first shift
+      const firstShiftDay = firstShiftDate.getDay();
+      const daysFromMonday = firstShiftDay === 0 ? 6 : firstShiftDay - 1;
+      const firstWeekStart = new Date(firstShiftDate);
+      firstWeekStart.setDate(firstShiftDate.getDate() - daysFromMonday);
+      firstWeekStart.setHours(0, 0, 0, 0);
+      
+      // Find the Sunday of the most recent completed week
+      const todayDay = today.getDay();
+      const daysToLastSunday = todayDay === 0 ? 7 : todayDay;
+      const lastCompletedWeekEnd = new Date(today);
+      lastCompletedWeekEnd.setDate(today.getDate() - daysToLastSunday);
+      lastCompletedWeekEnd.setHours(23, 59, 59, 999);
+      
+      // Generate all weeks from first week to last completed week
+      const weeks: ArchivedWeek[] = [];
+      let currentWeekStart = new Date(firstWeekStart);
+      
+      while (currentWeekStart <= lastCompletedWeekEnd) {
+        const weekEnd = new Date(currentWeekStart);
+        weekEnd.setDate(currentWeekStart.getDate() + 6);
+        weekEnd.setHours(0, 0, 0, 0); // Keep at start of day for consistent date formatting
+        
+        weeks.push({
+          weekStart: new Date(currentWeekStart),
+          weekEnd: new Date(weekEnd),
+          label: `${formatDate(formatDateToYYYYMMDD(currentWeekStart))} - ${formatDate(formatDateToYYYYMMDD(weekEnd))}`,
+        });
+        
+        // Move to next week
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+      }
+      
+      // Reverse so most recent weeks are first
+      weeks.reverse();
+      
+      setAvailableWeeks(weeks);
+    } catch (error) {
+      console.error('Error generating available weeks:', error);
+      setAvailableWeeks([]);
+    }
+  }
+
+  async function handleGenerateReport() {
+    if (!selectedRestaurantId) {
+      alert('Please select a restaurant');
+      return;
+    }
+
+    if (availableWeeks.length === 0) {
+      alert('No weeks available. Please ensure shifts exist in the system.');
+      return;
+    }
+
+    // Get the currently selected week from the week selector
+    const selectedWeek = availableWeeks[selectedWeekIndex];
+    const weekStart = formatDateToYYYYMMDD(selectedWeek.weekStart);
+    const weekEnd = formatDateToYYYYMMDD(selectedWeek.weekEnd);
+
+    console.log('Generating report for:', weekStart, 'to', weekEnd);
+
+    try {
+      setGeneratingReport(true);
+
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          weekStart,
+          weekEnd,
+          restaurantId: selectedRestaurantId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Report generated successfully for week ${weekStart} to ${weekEnd}!`);
+        setShowGenerateForm(false);
+        
+        // Reload reports to show the new one
+        await loadReports();
+        
+        // The week is already selected (selectedWeekIndex), so the report will show automatically
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report');
+    } finally {
+      setGeneratingReport(false);
+    }
+  }
+
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString('en-AU', {
       day: 'numeric',
@@ -105,6 +265,58 @@ export default function ReportsPage() {
       minute: '2-digit',
       hour12: false,
     });
+  }
+
+  // Group reports by week
+  function groupReportsByWeek(): Map<string, Report[]> {
+    const grouped = new Map<string, Report[]>();
+    
+    reports.forEach((report) => {
+      const weekKey = `${report.week_start_date}_${report.week_end_date}`;
+      if (!grouped.has(weekKey)) {
+        grouped.set(weekKey, []);
+      }
+      grouped.get(weekKey)!.push(report);
+    });
+    
+    return grouped;
+  }
+
+  // Filter reports by selected week
+  function getFilteredReports(): Report[] {
+    if (availableWeeks.length === 0) return reports;
+    
+    const selectedWeek = availableWeeks[selectedWeekIndex];
+    
+    // Format dates consistently - use local date string (YYYY-MM-DD)
+    const weekStartStr = formatDateToYYYYMMDD(selectedWeek.weekStart);
+    const weekEndStr = formatDateToYYYYMMDD(selectedWeek.weekEnd);
+    
+    console.log('Filtering reports:');
+    console.log('Selected week:', weekStartStr, 'to', weekEndStr);
+    console.log('Available reports:', reports.map(r => ({
+      id: r.id,
+      start: r.week_start_date,
+      end: r.week_end_date,
+      restaurant: r.summary_data.restaurant_name
+    })));
+    
+    const filtered = reports.filter(report => {
+      const matches = report.week_start_date === weekStartStr && report.week_end_date === weekEndStr;
+      console.log(`Report ${report.id}: ${report.week_start_date} to ${report.week_end_date} - Matches: ${matches}`);
+      return matches;
+    });
+    
+    console.log('Filtered reports:', filtered.length);
+    return filtered;
+  }
+  
+  // Helper to format date as YYYY-MM-DD in local timezone
+  function formatDateToYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   function exportToCSV(report: Report) {
@@ -133,31 +345,126 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
-              Weekly Reports
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              View worker hours and shift history
-            </p>
-          </div>
-          <div className="flex gap-2">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top Navigation */}
+      <AdminNav onSignOut={signOut} />
+
+      {/* Main Content */}
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+          {/* Page Header */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
+                Weekly Reports
+              </h1>
+              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                View worker hours and shift history
+              </p>
+            </div>
             <Button
-              variant="outline"
-              onClick={() => router.push('/admin')}
-              className="shadow-sm text-sm sm:text-base"
+              onClick={() => setShowGenerateForm(!showGenerateForm)}
+              className="shadow-sm text-sm sm:text-base w-fit"
             >
-              Back to Dashboard
-            </Button>
-            <Button variant="outline" onClick={signOut} className="shadow-sm text-sm sm:text-base">
-              Sign Out
+              <Plus className="w-4 h-4 mr-2" />
+              Generate Report
             </Button>
           </div>
-        </div>
+
+          {/* Week Selector Controls */}
+          <Card className="shadow-lg border-0">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center gap-6">
+                <label className="text-sm font-medium">Select Week:</label>
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedWeekIndex(Math.min(selectedWeekIndex + 1, availableWeeks.length - 1))}
+                    disabled={selectedWeekIndex >= availableWeeks.length - 1 || availableWeeks.length === 0}
+                    className="shrink-0"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  
+                  <select
+                    value={selectedWeekIndex}
+                    onChange={(e) => setSelectedWeekIndex(Number(e.target.value))}
+                    className="flex-1 h-10 rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    disabled={availableWeeks.length === 0}
+                  >
+                    {availableWeeks.map((week, index) => (
+                      <option key={index} value={index}>
+                        {week.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedWeekIndex(Math.max(selectedWeekIndex - 1, 0))}
+                    disabled={selectedWeekIndex <= 0 || availableWeeks.length === 0}
+                    className="shrink-0"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        {/* Generate Report Form */}
+        {showGenerateForm && availableWeeks.length > 0 && (
+          <Card className="border-2 border-primary shadow-lg">
+            <CardHeader className="bg-primary/5">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <RefreshCw className="w-5 h-5" />
+                Generate Weekly Report
+              </CardTitle>
+              <CardDescription>
+                Create a report for selected week: {availableWeeks[selectedWeekIndex].label}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Select Restaurant</label>
+                    <select
+                      value={selectedRestaurantId}
+                      onChange={(e) => setSelectedRestaurantId(e.target.value)}
+                      className="w-full h-10 rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      {restaurants.map((restaurant) => (
+                        <option key={restaurant.id} value={restaurant.id}>
+                          {restaurant.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleGenerateReport}
+                    disabled={generatingReport || !selectedRestaurantId}
+                    className="shadow-sm"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${generatingReport ? 'animate-spin' : ''}`} />
+                    {generatingReport ? 'Generating...' : 'Generate Report'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowGenerateForm(false)}
+                    className="shadow-sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Reports List */}
@@ -170,30 +477,30 @@ export default function ReportsPage() {
               <CardDescription>Select a week to view details</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {reports.length === 0 ? (
+              {getFilteredReports().length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No reports generated yet</p>
-                  <p className="text-xs mt-2">Reports are generated every Saturday night</p>
+                  <p>No reports for this week</p>
+                  <p className="text-xs mt-2">Try selecting a different week or generate a new report</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {reports.map((report, index) => (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                  {getFilteredReports().map((report, reportIndex) => (
                     <motion.button
                       key={report.id}
                       onClick={() => setSelectedReport(report)}
-                      className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
                         selectedReport?.id === report.id
-                          ? 'border-primary bg-muted/50 shadow-md'
-                          : 'border-gray-200 hover:border-primary/50 bg-white'
+                          ? 'border-primary bg-primary/5 shadow-md'
+                          : 'border-border hover:border-primary/50 bg-card hover:bg-muted/30'
                       }`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: reportIndex * 0.05 }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">
-                          <Calendar className="w-6 h-6" />
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm truncate">
@@ -201,9 +508,6 @@ export default function ReportsPage() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {formatDate(report.week_start_date)} - {formatDate(report.week_end_date)}
-                          </p>
-                          <p className="text-xs text-purple-600 font-medium mt-1">
-                            {report.total_hours.toFixed(1)} hours
                           </p>
                         </div>
                       </div>
@@ -401,6 +705,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

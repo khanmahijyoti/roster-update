@@ -13,7 +13,8 @@ import { RestaurantManager } from '@/components/admin/RestaurantManager'
 import { DashboardStats } from '@/components/admin/DashboardStats'
 import { SidePanel } from '@/components/ui/side-panel'
 import { getCurrentWeek, getNextWeek } from '@/utils/date-utils'
-import { ChevronLeft, ChevronRight, BarChart3, Settings, FileText, LogOut, LayoutGrid, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
+import { AdminNav } from '@/components/layout/AdminNav'
 
 export default function AdminPage() {
   const { user, profile, role, restaurantId, setSelectedRestaurant, loading: authLoading, signOut } = useAuth()
@@ -175,105 +176,51 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-30">
-        <div className="max-w-full mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          {/* Left: Logo & Title */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <LayoutGrid className="h-5 w-5" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="font-bold text-lg leading-tight">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground truncate">
-                {currentRestaurant?.name || 'Select Restaurant'}
-              </p>
-            </div>
-          </div>
+      {/* Top Navigation */}
+      <AdminNav
+        onStatsClick={() => setShowStats(true)}
+        onManagementClick={() => setShowManagement(true)}
+        onSignOut={signOut}
+      />
 
-          {/* Center: Controls */}
-          <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-center max-w-2xl">
-            {/* Restaurant Selector */}
-            <select
-              value={selectedRestaurant || ''}
-              onChange={(e) => handleRestaurantChange(e.target.value)}
-              className="h-9 rounded-md border bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-48"
+      {/* Secondary Controls Bar */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-20">
+        <div className="max-w-full mx-auto px-4 h-14 flex items-center justify-center gap-4">
+          {/* Restaurant Selector */}
+          <select
+            value={selectedRestaurant || ''}
+            onChange={(e) => handleRestaurantChange(e.target.value)}
+            className="h-9 rounded-md border bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-48"
+          >
+            {restaurants.map((restaurant) => (
+              <option key={restaurant.id} value={restaurant.id}>
+                {restaurant.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Week Toggle */}
+          <div className="flex bg-muted rounded-lg p-1 shrink-0">
+            <button
+              onClick={() => setSelectedWeek('current')}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
+                selectedWeek === 'current' 
+                  ? 'bg-background text-primary shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {restaurants.map((restaurant) => (
-                <option key={restaurant.id} value={restaurant.id}>
-                  {restaurant.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Week Toggle */}
-            <div className="flex bg-muted rounded-lg p-1 shrink-0">
-              <button
-                onClick={() => setSelectedWeek('current')}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
-                  selectedWeek === 'current' 
-                    ? 'bg-background text-primary shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Current
-              </button>
-              <button
-                onClick={() => setSelectedWeek('next')}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
-                  selectedWeek === 'next' 
-                    ? 'bg-background text-primary shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowStats(true)}
-              title="Statistics"
-              className="text-muted-foreground hover:text-primary"
+              Current
+            </button>
+            <button
+              onClick={() => setSelectedWeek('next')}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
+                selectedWeek === 'next' 
+                  ? 'bg-background text-primary shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <BarChart3 className="h-5 w-5" />
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => router.push('/reports')}
-              title="Reports"
-              className="text-muted-foreground hover:text-primary"
-            >
-              <FileText className="h-5 w-5" />
-            </Button>
-
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowManagement(true)}
-              title="Manage Restaurants"
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-
-            <div className="h-6 w-px bg-border mx-1" />
-
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={signOut}
-              title="Sign Out"
-              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+              Next
+            </button>
           </div>
         </div>
       </header>
