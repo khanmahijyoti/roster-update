@@ -52,11 +52,16 @@ export function ShiftCard({
     ? `${shift.worker_profile.first_name} ${shift.worker_profile.last_name}`
     : 'Unassigned';
 
+  const now = new Date();
+  const endTime = new Date(shift.end_time);
+  const isPast = endTime < now;
+  const isLocked = !isEditable;
+
   return (
     <Card
       className={`p-3 border-l-4 transition-all hover:shadow-md ${getStatusColor()} ${
         shift.status === 'draft' ? 'opacity-80' : ''
-      }`}
+      } ${isLocked ? 'opacity-60 grayscale bg-muted border-muted-foreground/30 pointer-events-none select-none' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -70,14 +75,21 @@ export function ShiftCard({
               {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
             </span>
           </div>
-          {shift.status === 'draft' && (
-            <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded">
-              Draft
-            </span>
-          )}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {shift.status === 'draft' && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                DRAFT
+              </span>
+            )}
+            {isLocked && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted-foreground/10 text-muted-foreground border border-border/50">
+                {isPast ? 'COMPLETED' : 'ONGOING'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {isEditable && (
+        {!isLocked && (
           <div className="flex gap-1">
             {onEdit && (
               <Button

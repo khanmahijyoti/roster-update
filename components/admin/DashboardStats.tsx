@@ -1,7 +1,7 @@
 'use client';
 
 import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
-import { Users, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Users, Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface StatCard {
@@ -14,9 +14,7 @@ interface StatCard {
 
 interface DashboardStatsProps {
   totalWorkers: number;
-  draftShifts: number;
-  publishedShifts: number;
-  totalHours: number;
+  totalRestaurants: number;
 }
 
 const StatHeader = ({ icon, gradient, value }: { icon: React.ReactNode; gradient: string; value: string | number }) => (
@@ -43,7 +41,7 @@ const StatHeader = ({ icon, gradient, value }: { icon: React.ReactNode; gradient
   </div>
 );
 
-export function DashboardStats({ totalWorkers, draftShifts, publishedShifts, totalHours }: DashboardStatsProps) {
+export function DashboardStats({ totalWorkers, totalRestaurants }: DashboardStatsProps) {
   const stats: StatCard[] = [
     {
       title: 'Total Workers',
@@ -53,30 +51,16 @@ export function DashboardStats({ totalWorkers, draftShifts, publishedShifts, tot
       iconColor: 'text-chart-1',
     },
     {
-      title: 'Draft Shifts',
-      value: draftShifts,
-      icon: <Clock className="w-8 h-8" />,
-      gradient: 'bg-chart-2',
-      iconColor: 'text-chart-2',
-    },
-    {
-      title: 'Published Shifts',
-      value: publishedShifts,
-      icon: <CheckCircle className="w-8 h-8" />,
-      gradient: 'bg-chart-3',
-      iconColor: 'text-chart-3',
-    },
-    {
-      title: 'Total Hours',
-      value: totalHours.toFixed(1),
-      icon: <Calendar className="w-8 h-8" />,
+      title: 'Total Restaurants',
+      value: totalRestaurants,
+      icon: <Store className="w-8 h-8" />,
       gradient: 'bg-primary',
       iconColor: 'text-primary',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {stats.map((stat, index) => (
         <motion.div
           key={index}
@@ -86,7 +70,7 @@ export function DashboardStats({ totalWorkers, draftShifts, publishedShifts, tot
         >
           <BentoGridItem
             title={stat.title}
-            description={`${stat.title === 'Total Hours' ? 'hours scheduled this week' : 'in the system'}`}
+            description="in the system"
             header={<StatHeader icon={stat.icon} gradient={stat.gradient} value={stat.value} />}
             className="hover:scale-105 transition-transform duration-200"
           />

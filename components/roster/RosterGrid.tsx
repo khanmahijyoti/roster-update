@@ -251,7 +251,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
         // Update in local state
         setShifts(shifts.map(s => s.id === editingShift.shiftId ? updatedShift : s));
       } else {
-        // Create new shift
+        // Create new shift - auto-publish immediately
         const { data, error: insertError } = await supabase
           .from('shifts')
           .insert({
@@ -259,7 +259,7 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
             worker_id: editingShift.workerId,
             start_time: startDateTime.toISOString(),
             end_time: endDateTime.toISOString(),
-            status: 'draft',
+            status: 'published',
           })
           .select()
           .single();
@@ -458,6 +458,31 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                 const isSelected =
                   selectedCell?.workerId === worker.id &&
                   selectedCell?.date === formatDateISO(date);
+                
+                // Determine if the cell is locked (past day or within 5-hour buffer)
+                const now = new Date();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const cellDateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const isPastDay = cellDateStart < todayStart;
+                
+                // 5-hour buffer rule: Cannot add shifts if current time is within 5 hours of earliest shift start (08:00)
+                // Earliest shift starts at 08:00, so cutoff is 08:00 - 5 hours = 03:00
+                // If it's currently past 03:00 on the cell date, it's too late to add shifts for that day
+                const cellCutoffTime = new Date(date);
+                cellCutoffTime.setHours(3, 0, 0, 0); // 08:00 - 5 hours = 03:00
+                const isTooLateToAddShift = now >= cellCutoffTime && cellDateStart.getTime() === todayStart.getTime();
+                
+                // Cell is locked if it's a past day OR within the 5-hour buffer
+                const isLockedCell = isPastDay || isTooLateToAddShift;
+                
+                // Determine lock reason for display
+                let lockReason = '';
+                if (isPastDay) {
+                  lockReason = 'Locked (Past)';
+                } else if (isTooLateToAddShift) {
+                  lockReason = 'Too Late (< 5hrs)';
+                }
+
 
                 return (
                   <div
@@ -465,24 +490,37 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                     className={`min-h-[120px] p-3 rounded-xl border-2 transition-all shadow-sm hover:shadow-md ${
                       isSelected
                         ? 'border-primary shadow-lg scale-105'
+                        : isLockedCell
+                          ? 'border-muted bg-muted/30 opacity-70' // Style for locked cells (past or within buffer)
                         : status === 'available'
-                        ? 'border-primary/30 bg-primary/10'
-                        : 'border-destructive/30 bg-destructive/10'
+                          ? 'border-primary/30 bg-primary/10'
+                          : 'border-destructive/30 bg-destructive/10'
                     }`}
                   >
                     <div className="space-y-2">
-                      {cellShifts.map((shift) => (
-                        <ShiftCard
-                          key={shift.id}
-                          shift={shift}
-                          onEdit={handleEditShift}
-                          onDelete={handleDeleteShift}
-                          statusIndicator={status}
-                        />
-                      ))}
+                      {cellShifts.map((shift) => {
+                        const shiftStartTime = new Date(shift.start_time);
+                        const isShiftStarted = shiftStartTime <= now;
+                        
+                        // User requested that shifts that have already started are "greyed out also so its evident"
+                        // My previous change in ShiftCard.tsx handles the styling via `isLocked` (which comes from !isEditable).
+                        // So setting `isEditable={!isShiftStarted}` correctly locks it and applies the grey style.
+                        
+                        return (
+                          <ShiftCard
+                            key={shift.id}
+                            shift={shift}
+                            isEditable={!isShiftStarted}
+                            onEdit={handleEditShift}
+                            onDelete={handleDeleteShift}
+                            statusIndicator={status}
+                          />
+                        );
+                      })}
 
                       {/* Add Shift Button */}
-                      {status !== 'busy' && (
+                      {/* Only show add shift if not busy AND not locked (past day or within buffer) */}
+                      {status !== 'busy' && !isLockedCell && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -494,7 +532,14 @@ export function RosterGrid({ week, restaurantId, onShiftsChange }: RosterGridPro
                         </Button>
                       )}
 
-                      {status === 'busy' && (
+                      {/* Locked Cell Indicator - show if NO shifts and cell is locked */}
+                      {isLockedCell && cellShifts.length === 0 && (
+                         <div className="text-xs text-muted-foreground font-semibold text-center bg-muted/50 px-2 py-1 rounded-lg border border-border/50 select-none opacity-75">
+                           {lockReason}
+                         </div>
+                      )}
+
+                      {status === 'busy' && !isLockedCell && (
                         <div className="text-xs text-destructive-foreground font-semibold text-center bg-destructive/20 px-2 py-1 rounded-lg">
                           ⚠️ Unavailable
                         </div>

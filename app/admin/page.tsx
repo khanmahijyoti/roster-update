@@ -11,8 +11,9 @@ import { RosterGrid } from '@/components/roster/RosterGrid'
 import { RosterActions } from '@/components/roster/RosterActions'
 import { RestaurantManager } from '@/components/admin/RestaurantManager'
 import { DashboardStats } from '@/components/admin/DashboardStats'
+import { SidePanel } from '@/components/ui/side-panel'
 import { getCurrentWeek, getNextWeek } from '@/utils/date-utils'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BarChart3, Settings, FileText, LogOut, LayoutGrid, Calendar } from 'lucide-react'
 
 export default function AdminPage() {
   const { user, profile, role, restaurantId, setSelectedRestaurant, loading: authLoading, signOut } = useAuth()
@@ -25,8 +26,11 @@ export default function AdminPage() {
   const [selectedWeek, setSelectedWeek] = useState<'current' | 'next'>('current')
   const [shifts, setShifts] = useState<Shift[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
-  const [showRestaurantManager, setShowRestaurantManager] = useState(false)
   const [workerCount, setWorkerCount] = useState(0)
+  
+  // Panel states
+  const [showStats, setShowStats] = useState(false)
+  const [showManagement, setShowManagement] = useState(false)
 
   const currentWeek = getCurrentWeek()
   const nextWeek = getNextWeek()
@@ -145,22 +149,23 @@ export default function AdminPage() {
 
   if (restaurants.length === 0) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Welcome, {profile?.first_name} {profile?.last_name}</p>
-            </div>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
-          </div>
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold">No Restaurants Found</h1>
+          <p className="text-muted-foreground">Please create a restaurant to get started.</p>
+          <Button onClick={() => setShowManagement(true)}>Open Management Panel</Button>
           
-          <RestaurantManager 
-            restaurants={restaurants} 
-            onRestaurantsChange={loadRestaurants}
-          />
+          <SidePanel 
+            isOpen={showManagement} 
+            onClose={() => setShowManagement(false)} 
+            title="Restaurant Management"
+            width="max-w-4xl"
+          >
+            <RestaurantManager 
+              restaurants={restaurants} 
+              onRestaurantsChange={loadRestaurants}
+            />
+          </SidePanel>
         </div>
       </div>
     )
@@ -168,83 +173,31 @@ export default function AdminPage() {
 
   const currentRestaurant = restaurants.find(r => r.id === selectedRestaurant)
 
-  // If showing restaurant manager, render that view
-  if (showRestaurantManager) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Restaurant Management</h1>
-              <p className="text-sm text-muted-foreground">Welcome, {profile?.first_name} {profile?.last_name}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowRestaurantManager(false)}>
-                Back to Roster
-              </Button>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-          
-          <RestaurantManager 
-            restaurants={restaurants} 
-            onRestaurantsChange={loadRestaurants}
-          />
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Welcome back, {profile?.first_name} {profile?.last_name}
-            </p>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top Navigation Bar */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-30">
+        <div className="max-w-full mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          {/* Left: Logo & Title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <LayoutGrid className="h-5 w-5" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="font-bold text-lg leading-tight">Admin Dashboard</h1>
+              <p className="text-xs text-muted-foreground truncate">
+                {currentRestaurant?.name || 'Select Restaurant'}
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => router.push('/reports')} 
-              className="shadow-sm flex-1 sm:flex-none whitespace-nowrap text-sm sm:text-base"
-            >
-              View Reports
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowRestaurantManager(true)} 
-              className="shadow-sm flex-1 sm:flex-none whitespace-nowrap text-sm sm:text-base"
-            >
-              Manage Restaurants
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={signOut} 
-              className="shadow-sm flex-1 sm:flex-none text-sm sm:text-base"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
 
-        {/* Restaurant Selector */}
-        <Card className="shadow-md border-0">
-          <CardHeader className="bg-muted/50">
-            <CardTitle className="text-lg">Select Restaurant</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
+          {/* Center: Controls */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-center max-w-2xl">
+            {/* Restaurant Selector */}
             <select
               value={selectedRestaurant || ''}
               onChange={(e) => handleRestaurantChange(e.target.value)}
-              className="w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background"
+              className="h-9 rounded-md border bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-48"
             >
               {restaurants.map((restaurant) => (
                 <option key={restaurant.id} value={restaurant.id}>
@@ -252,85 +205,155 @@ export default function AdminPage() {
                 </option>
               ))}
             </select>
-          </CardContent>
-        </Card>
 
-        {/* Week Selector */}
-        <Card className="shadow-md border-0">
-          <CardHeader className="bg-muted/50">
-            <CardTitle className="text-lg">Week Selection</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                variant={selectedWeek === 'current' ? 'default' : 'outline'}
+            {/* Week Toggle */}
+            <div className="flex bg-muted rounded-lg p-1 shrink-0">
+              <button
                 onClick={() => setSelectedWeek('current')}
-                className={`h-auto py-4 ${selectedWeek === 'current' ? 'shadow-lg' : ''}`}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
+                  selectedWeek === 'current' 
+                    ? 'bg-background text-primary shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <div className="text-center">
-                  <div className="font-semibold">Current Week</div>
-                  <div className="text-xs mt-1 opacity-90">
-                    {currentWeek.start.toLocaleDateString()} - {currentWeek.end.toLocaleDateString()}
-                  </div>
-                </div>
-              </Button>
-              <Button
-                variant={selectedWeek === 'next' ? 'default' : 'outline'}
+                Current
+              </button>
+              <button
                 onClick={() => setSelectedWeek('next')}
-                className={`h-auto py-4 ${selectedWeek === 'next' ? 'shadow-lg' : ''}`}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${
+                  selectedWeek === 'next' 
+                    ? 'bg-background text-primary shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <div className="text-center">
-                  <div className="font-semibold">Next Week</div>
-                  <div className="text-xs mt-1 opacity-90">
-                    {nextWeek.start.toLocaleDateString()} - {nextWeek.end.toLocaleDateString()}
+                Next
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setShowStats(true)}
+              title="Statistics"
+              className="text-muted-foreground hover:text-primary"
+            >
+              <BarChart3 className="h-5 w-5" />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => router.push('/reports')}
+              title="Reports"
+              className="text-muted-foreground hover:text-primary"
+            >
+              <FileText className="h-5 w-5" />
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setShowManagement(true)}
+              title="Manage Restaurants"
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+
+            <div className="h-6 w-px bg-border mx-1" />
+
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={signOut}
+              title="Sign Out"
+              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content: Roster Grid */}
+      <main className="flex-1 overflow-auto p-4 sm:p-6">
+        <div className="max-w-[1600px] mx-auto space-y-4">
+          {selectedRestaurant && (
+            <>
+              {/* Roster Header */}
+              <div className="flex flex-col gap-4 bg-card rounded-xl p-4 shadow-sm border">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                      <span className="truncate">{selectedWeek === 'current' ? 'Current Week Roster' : 'Next Week Plan'}</span>
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {activeWeek.start.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })} - {activeWeek.end.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </p>
                   </div>
                 </div>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                
+                <RosterActions
+                  restaurantId={selectedRestaurant}
+                  weekStart={activeWeek.start}
+                  weekEnd={activeWeek.end}
+                  draftCount={draftCount}
+                  publishedCount={publishedCount}
+                  onPublishComplete={handleShiftsChange}
+                />
+              </div>
 
-        {/* Dashboard Stats */}
-        {selectedRestaurant && (
+              {/* Roster Grid */}
+              <Card className="shadow-lg border-0 overflow-hidden">
+                <CardContent className="p-0">
+                  <RosterGrid
+                    week={activeWeek}
+                    restaurantId={selectedRestaurant}
+                    onShiftsChange={handleShiftsChange}
+                  />
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </main>
+
+      {/* Side Panels */}
+      
+      {/* Statistics Panel */}
+      <SidePanel 
+        isOpen={showStats} 
+        onClose={() => setShowStats(false)} 
+        title="Dashboard Statistics"
+        width="max-w-md"
+      >
+        <div className="space-y-6">
+          <p className="text-sm text-muted-foreground">
+            Global system overview
+          </p>
           <DashboardStats
             totalWorkers={workerCount}
-            draftShifts={draftCount}
-            publishedShifts={publishedCount}
-            totalHours={totalHours}
+            totalRestaurants={restaurants.length}
           />
-        )}
+        </div>
+      </SidePanel>
 
-        {/* Roster Actions */}
-        {selectedRestaurant && (
-          <RosterActions
-            restaurantId={selectedRestaurant}
-            weekStart={activeWeek.start}
-            weekEnd={activeWeek.end}
-            draftCount={draftCount}
-            publishedCount={publishedCount}
-            onPublishComplete={handleShiftsChange}
-          />
-        )}
-
-        {/* Roster Grid */}
-        {selectedRestaurant && (
-          <Card className="shadow-lg border-0">
-            <CardHeader className="bg-muted/50 border-b">
-              <CardTitle className="text-xl">Roster Builder</CardTitle>
-              <CardDescription className="text-base">
-                Click on a cell to add a shift. 🟢 Available • 🔴 Unavailable (blocked)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <RosterGrid
-                week={activeWeek}
-                restaurantId={selectedRestaurant}
-                onShiftsChange={handleShiftsChange}
-              />
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Management Panel */}
+      <SidePanel 
+        isOpen={showManagement} 
+        onClose={() => setShowManagement(false)} 
+        title="Restaurant Management"
+        width="max-w-4xl"
+      >
+        <RestaurantManager 
+          restaurants={restaurants} 
+          onRestaurantsChange={loadRestaurants}
+        />
+      </SidePanel>
     </div>
   )
 }
